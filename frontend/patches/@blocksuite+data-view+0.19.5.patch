@@ -1,0 +1,41 @@
+diff --git a/node_modules/@blocksuite/data-view/dist/core/group-by/renderer/boolean-group.js b/node_modules/@blocksuite/data-view/dist/core/group-by/renderer/boolean-group.js
+index ff7b3b2..43ddca9 100644
+--- a/node_modules/@blocksuite/data-view/dist/core/group-by/renderer/boolean-group.js
++++ b/node_modules/@blocksuite/data-view/dist/core/group-by/renderer/boolean-group.js
+@@ -1,4 +1,4 @@
+-import { CheckBoxCkeckSolidIcon, CheckBoxUnIcon } from '@blocksuite/icons/lit';
++import { CheckBoxCheckSolidIcon, CheckBoxUnIcon } from '@blocksuite/icons/lit';
+ import { css, html } from 'lit';
+ import { BaseGroup } from './base.js';
+ export class BooleanGroupView extends BaseGroup {
+@@ -15,7 +15,7 @@ export class BooleanGroupView extends BaseGroup {
+     render() {
+         return html ` <div class="data-view-group-title-boolean-view">
+       ${this.value
+-            ? CheckBoxCkeckSolidIcon({ style: `color:#1E96EB` })
++            ? CheckBoxCheckSolidIcon({ style: `color:#1E96EB` })
+             : CheckBoxUnIcon()}
+     </div>`;
+     }
+diff --git a/node_modules/@blocksuite/data-view/dist/property-presets/checkbox/cell-renderer.js b/node_modules/@blocksuite/data-view/dist/property-presets/checkbox/cell-renderer.js
+index a1a8ed2..ea84d8e 100644
+--- a/node_modules/@blocksuite/data-view/dist/property-presets/checkbox/cell-renderer.js
++++ b/node_modules/@blocksuite/data-view/dist/property-presets/checkbox/cell-renderer.js
+@@ -33,7 +33,7 @@ var __runInitializers = (this && this.__runInitializers) || function (thisArg, i
+     return useValue ? value : void 0;
+ };
+ import { unsafeCSSVarV2 } from '@blocksuite/affine-shared/theme';
+-import { CheckBoxCkeckSolidIcon, CheckBoxUnIcon } from '@blocksuite/icons/lit';
++import { CheckBoxCheckSolidIcon, CheckBoxUnIcon } from '@blocksuite/icons/lit';
+ import { css, html } from 'lit';
+ import { query } from 'lit/decorators.js';
+ import { BaseCellRenderer } from '../../core/property/index.js';
+@@ -120,7 +120,7 @@ let CheckboxCell = (() => {
+         render() {
+             const checked = this.value ?? false;
+             const icon = checked
+-                ? CheckBoxCkeckSolidIcon({ style: `color:#1E96EB` })
++                ? CheckBoxCheckSolidIcon({ style: `color:#1E96EB` })
+                 : CheckBoxUnIcon();
+             return html ` <div class="affine-database-checkbox-container">
+       <div

@@ -1,0 +1,40 @@
+{
+  "exclude": [
+    "node_modules"
+  ],
+  "compilerOptions": {
+    "module": "CommonJS",
+    "declaration": true,
+    "removeComments": true,
+    "esModuleInterop": true,
+    "resolveJsonModule": true,
+    "emitDecoratorMetadata": true,
+    "experimentalDecorators": true,
+    "allowSyntheticDefaultImports": true,
+    "moduleResolution": "node",
+    "target": "ESNext",
+    "sourceMap": true,
+    "baseUrl": "./",
+    "incremental": true,
+    "skipLibCheck": true,
+    "skipDefaultLibCheck": true,
+    "noImplicitAny": true,
+    "noImplicitThis": true,
+    "paths": {
+      "@palatine_whiteboard_backend/src": ["src"],
+      "@palatine_whiteboard_backend/src/*": ["src/*"],
+      "@palatine_whiteboard_backend/migration": ["migration"],
+      "@palatine_whiteboard_backend/migration/*": ["migration/*"],
+      "@palatine_whiteboard_backend/configuration": ["configuration"],
+      "@palatine_whiteboard_backend/configuration/*": ["configuration/*"],
+      "@palatine_whiteboard_backend/src/auth": ["src/auth"],
+      "@palatine_whiteboard_backend/src/auth/*": ["src/auth/*"],
+      "@palatine_whiteboard_backend/src/user": ["src/user"],
+      "@palatine_whiteboard_backend/src/user/*": ["src/user/*"],
+      "@palatine_whiteboard_backend/shared": ["libs/shared"],
+      "@palatine_whiteboard_backend/shared/*": ["libs/shared/*"],
+      "@palatine_whiteboard_backend/service": ["libs/service"],
+      "@palatine_whiteboard_backend/service/*": ["libs/service/*"]
+    }
+  }
+}
