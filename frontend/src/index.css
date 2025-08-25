@@ -1,44 +1,339 @@
-@tailwind base;
-@tailwind components;
-@tailwind utilities;
-
 * {
+  box-sizing: border-box;
   margin: 0;
   padding: 0;
-  box-sizing: border-box;
 }
 
 body {
-  font-family: 'Inter', system-ui, -apple-system, sans-serif;
-  background-color: #f8fafc;
-}
-
-#root {
-  width: 100vw;
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', sans-serif;
+  background-color: #f8f9fa;
   height: 100vh;
-}
-
-/* BlockSuite Editor Styles */
-.affine-editor-container {
-  height: 100%;
-  width: 100%;
   overflow: hidden;
 }
 
-/* Custom scrollbar */
-::-webkit-scrollbar {
-  width: 8px;
+.app {
+  display: flex;
+  height: 100vh;
+  font-family: sans-serif;
 }
 
-::-webkit-scrollbar-track {
-  background: #f1f1f1;
+/* Sidebar Styles */
+.sidebar {
+  width: 280px;
+  background: #ffffff;
+  border-right: 1px solid #e1e5e9;
+  padding: 16px;
+  overflow-y: auto;
 }
 
-::-webkit-scrollbar-thumb {
-  background: #c1c1c1;
-  border-radius: 4px;
+.sidebar .header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 16px;
+  font-weight: 600;
+  font-size: 16px;
+  color: #1f2937;
 }
 
-::-webkit-scrollbar-thumb:hover {
-  background: #a8a8a8;
+.new-doc-btn {
+  background: #3b82f6;
+  color: white;
+  border: none;
+  border-radius: 6px;
+  width: 24px;
+  height: 24px;
+  cursor: pointer;
+  font-size: 16px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: background-color 0.2s;
+}
+
+.new-doc-btn:hover {
+  background: #2563eb;
+}
+
+.doc-list {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.doc-item {
+  padding: 12px 16px;
+  border-radius: 8px;
+  cursor: pointer;
+  transition: all 0.2s;
+  font-size: 14px;
+  color: #374151;
+  border: 1px solid transparent;
+}
+
+.doc-item:hover {
+  background-color: #f3f4f6;
+  border-color: #e5e7eb;
+}
+
+.doc-item.active {
+  background-color: #eff6ff;
+  border-color: #3b82f6;
+  color: #1d4ed8;
+  font-weight: 500;
+}
+
+/* Main Content */
+.main-content {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  background: #ffffff;
+}
+
+/* TopBar Styles */
+.top-bar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 12px 24px;
+  border-bottom: 1px solid #e1e5e9;
+  background: #ffffff;
+  height: 60px;
+}
+
+.top-bar-title {
+  font-size: 18px;
+  font-weight: 600;
+  color: #1f2937;
+}
+
+.top-bar-actions {
+  display: flex;
+  gap: 12px;
+}
+
+.toolbar-btn {
+  background: #3b82f6;
+  color: white;
+  border: none;
+  border-radius: 6px;
+  padding: 8px 16px;
+  cursor: pointer;
+  font-size: 14px;
+  font-weight: 500;
+  transition: background-color 0.2s;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.toolbar-btn:hover {
+  background: #2563eb;
+}
+
+.toolbar-btn:disabled {
+  background: #9ca3af;
+  cursor: not-allowed;
+}
+
+/* Editor Container */
+.editor-container {
+  flex: 1;
+  overflow: auto;
+  padding: 0;
+  background: #ffffff;
+}
+
+/* Image Widget Styles */
+.image-widget-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(0, 0, 0, 0.5);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1000;
+  backdrop-filter: blur(4px);
+}
+
+.image-widget {
+  background: white;
+  border-radius: 12px;
+  box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
+  width: 500px;
+  max-width: 90vw;
+  max-height: 80vh;
+  overflow: hidden;
+}
+
+.image-widget-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 20px 24px;
+  border-bottom: 1px solid #e5e7eb;
+  background: #f9fafb;
+}
+
+.image-widget-header h3 {
+  margin: 0;
+  font-size: 18px;
+  font-weight: 600;
+  color: #1f2937;
+}
+
+.close-button {
+  background: none;
+  border: none;
+  font-size: 24px;
+  cursor: pointer;
+  color: #6b7280;
+  width: 32px;
+  height: 32px;
+  border-radius: 6px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.2s;
+}
+
+.close-button:hover {
+  background: #f3f4f6;
+  color: #374151;
+}
+
+.close-button:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.image-widget-content {
+  padding: 24px;
+}
+
+.prompt-input {
+  width: 100%;
+  min-height: 120px;
+  padding: 12px;
+  border: 2px solid #e5e7eb;
+  border-radius: 8px;
+  font-family: inherit;
+  font-size: 14px;
+  line-height: 1.5;
+  resize: vertical;
+  outline: none;
+  transition: border-color 0.2s;
+  background: #ffffff;
+}
+
+.prompt-input:focus {
+  border-color: #3b82f6;
+  box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
+}
+
+.prompt-input:disabled {
+  background: #f9fafb;
+  color: #6b7280;
+  cursor: not-allowed;
+}
+
+.image-widget-actions {
+  display: flex;
+  gap: 12px;
+  margin-top: 20px;
+  justify-content: flex-end;
+}
+
+.generate-button {
+  background: #10b981;
+  color: white;
+  border: none;
+  border-radius: 6px;
+  padding: 10px 20px;
+  cursor: pointer;
+  font-size: 14px;
+  font-weight: 500;
+  transition: all 0.2s;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  min-width: 140px;
+  justify-content: center;
+}
+
+.generate-button:hover:not(:disabled) {
+  background: #059669;
+  transform: translateY(-1px);
+}
+
+.generate-button:disabled {
+  background: #9ca3af;
+  cursor: not-allowed;
+  transform: none;
+}
+
+.generate-button.loading {
+  position: relative;
+}
+
+.loading-spinner {
+  width: 16px;
+  height: 16px;
+  border: 2px solid rgba(255, 255, 255, 0.3);
+  border-radius: 50%;
+  border-top: 2px solid white;
+  animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+.cancel-button {
+  background: #f3f4f6;
+  color: #374151;
+  border: none;
+  border-radius: 6px;
+  padding: 10px 20px;
+  cursor: pointer;
+  font-size: 14px;
+  font-weight: 500;
+  transition: background-color 0.2s;
+}
+
+.cancel-button:hover:not(:disabled) {
+  background: #e5e7eb;
+}
+
+.cancel-button:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+/* Responsive Design */
+@media (max-width: 768px) {
+  .app {
+    flex-direction: column;
+  }
+  
+  .sidebar {
+    width: 100%;
+    height: auto;
+    max-height: 200px;
+  }
+  
+  .image-widget {
+    width: 95vw;
+    margin: 20px;
+  }
+  
+  .image-widget-content {
+    padding: 16px;
+  }
 }

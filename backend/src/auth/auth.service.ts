@@ -45,9 +45,6 @@ export class AuthService {
     const userRes = await this.userService.findOne(___.pick(inputDto, ['email']));
     assert(!userRes, l10n.email_exist);
 
-    const phoneNumberRes = await this.userService.findOne(___.pick(inputDto, ['phone']));
-    assert(!phoneNumberRes, l10n.phone_exist);
-
     const userInput = await this.userService.password(inputDto);
     return await this.userService.create({
       ...inputDto,

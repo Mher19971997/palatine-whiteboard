@@ -1,0 +1,26 @@
+version: '3'
+services:
+  redis:
+    image: redis:latest
+    restart: always
+    command: redis-server --requirepass rB4dRlyn38F75Sg13Xd5iNM1wfSYZY708gh
+    ports:
+      - '6379:6379'
+  postgres:
+    image: postgres
+    container_name: postgres_container
+    restart: always
+    environment:
+      POSTGRES_DB: crash
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: rB4dRlyn38F75Sg13Xd5iNM1wfSYZY708gh
+      PGDATA: /var/lib/postgresql/data
+    ports:
+      - '5432:5432'
+    volumes:
+      - db-data:/var/lib/postgresql/data
+      - ./init.sql:/docker-entrypoint-initdb.d/init.sql 
+    command: ["postgres", "-c", "log_statement=all"]
+volumes:
+  db-data:
+  pgadmin-data:

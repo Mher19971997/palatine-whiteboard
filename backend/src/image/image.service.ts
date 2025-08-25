@@ -1,11 +1,9 @@
 // src/image/image.service.ts
 import { Injectable } from '@nestjs/common';
-import { GenerateImageDto } from './dto/input/generate-image.dto';
-import { ImageResponseDto } from './dto/output/image-response.dto';
 
 @Injectable()
 export class ImageService {
-  async generateImage(generateDto: GenerateImageDto): Promise<ImageResponseDto> {
+  async generateImage(generateDto: any) {
     // Имитация задержки генерации изображения
     await new Promise(resolve => setTimeout(resolve, 2000));
 

@@ -1,7 +1,7 @@
 import axios from 'axios';
 import type { DocumentData, ImageGenerationRequest, ImageGenerationResponse } from '../types';
 
-const API_BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:3001';
+const API_BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:6001';
 
 const apiClient = axios.create({
   baseURL: API_BASE_URL,

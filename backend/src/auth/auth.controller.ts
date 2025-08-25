@@ -3,7 +3,6 @@ import { AuthService } from '@palatine_whiteboard_backend/src/auth/auth.service'
 import { authDto } from '@palatine_whiteboard_backend/src/auth/dto';
 import { RolesGuard } from '@palatine_whiteboard_backend/src/auth/guards/roles.guard';
 
-@c.UseGuards(RolesGuard)
 @c.Controller('auth')
 export class AuthController {
   constructor(private readonly authService: AuthService) {}

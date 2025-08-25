@@ -1,6 +1,6 @@
 import { io, Socket } from 'socket.io-client';
 
-const WEBSOCKET_URL = import.meta.env.VITE_WS_URL || 'http://localhost:3001';
+const WEBSOCKET_URL = import.meta.env.VITE_WS_URL || 'http://localhost:6001';
 
 export class WebSocketService {
   private socket: Socket | null = null;

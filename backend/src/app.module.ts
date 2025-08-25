@@ -4,11 +4,12 @@ import * as path from 'path'
 
 import { UserModule } from '@palatine_whiteboard_backend/src/user/user.module';
 import { AuthModule } from '@palatine_whiteboard_backend/src/auth/auth.module';
-import { ContactModule } from '@palatine_whiteboard_backend/src/contact/contact.module';
 import { ServiceModule } from '@palatine_whiteboard_backend/service/src/service.module';
 import { ConfigModule } from '@palatine_whiteboard_backend/shared/src/config/config.module';
 import { SequelizeModule } from '@palatine_whiteboard_backend/shared/src/sequelize/sequelize.module';
 import { FilesModule } from '@palatine_whiteboard_backend/shared/src/files/files.module';
+import { DocumentModule } from './document/document.module';
+import { CryptoService } from '@palatine_whiteboard_backend/shared/src/crypto/crypto.service';
 
 @Module({
   imports: [
@@ -17,9 +18,9 @@ import { FilesModule } from '@palatine_whiteboard_backend/shared/src/files/files
     ConfigModule.forRoot(),
     AuthModule,
     UserModule, 
-    ContactModule,
     SequelizeModule,
     FilesModule,
+    DocumentModule
   ],
   controllers: [],
   providers: [],

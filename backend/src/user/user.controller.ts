@@ -4,6 +4,7 @@ import { UUID } from '@palatine_whiteboard_backend/shared/src/sequelize/meta';
 import { userDto } from '@palatine_whiteboard_backend/src/user/dto';
 import { BearerUser, excludeFields } from '@palatine_whiteboard_backend/src/user/dto/output';
 import { decorator } from '@palatine_whiteboard_backend/shared/src/decorator';
+import { RolesGuard } from '../auth/guards/roles.guard';
 
 // @c.UseGuards(RolesGuard)
 @c.Controller('user')
@@ -18,6 +19,7 @@ export class UserController {
   }
 
   @c.Get('profile')
+  @c.UseGuards(RolesGuard)
   getProfile(@decorator.user.User() user: BearerUser) {
     return this.userService.getProfile(user);
   }

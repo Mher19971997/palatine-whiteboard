@@ -27,9 +27,7 @@ export class DocumentService extends CommonService<
     private readonly documentModel: typeof Document,
     private readonly paginateService: FilterService,
     private readonly configService: ConfigService,
-    private readonly cryptoService: CryptoService,
     private readonly cacheService: CacheService,
-    private readonly sequelize: Sequelize,
   ) {
     super({ model: documentModel, paginateService });
   }
@@ -38,10 +36,7 @@ export class DocumentService extends CommonService<
     // 1. Проверяем Redis кеш
     const cacheKey = `${this.CACHE_PREFIX}${userUuid}`;
     const cached = await this.cacheService.get(cacheKey);
-
-    if (cached) {
-      return JSON.parse(cached);
-    }
+    console.log(cached, 5555);
 
     // 2. Загружаем из PostgreSQL
     const document = await this.findOne({
@@ -53,9 +48,9 @@ export class DocumentService extends CommonService<
     }
 
     const response = {
-      id: document.id,
+      uuid: document.uuid,
       userUuid: document.userUuid,
-      documentData: document.documentData.toString('base64'),
+      documentData: document.documentData,
       version: document.version,
       updatedAt: document.updatedAt.toISOString(),
     };
@@ -67,17 +62,21 @@ export class DocumentService extends CommonService<
   }
 
   async createDocument(createDto: documentDto.inputs.CreateDocumentInput) {
+    //@ts-ignore
     const documentData = Buffer.from(createDto.documentData, 'base64');
-
+    const dockumentRes = await this.findOne({ userUuid: createDto.userUuid })
+    if(dockumentRes){
+      return dockumentRes
+    }
     const document = await this.create({
-      userId: createDto.userId,
+      userUuid: createDto.userUuid,
       documentData,
       version: createDto.version || 1,
     });
 
     const response = {
-      id: document.id,
-      userId: document.userId,
+      uuid: document.uuid,
+      userUuid: document.userUuid,
       documentData: createDto.documentData,
       version: document.version,
       updatedAt: document.updatedAt.toISOString(),
@@ -91,29 +90,28 @@ export class DocumentService extends CommonService<
   }
 
   async updateDocument(userUuid: string, updateDto: documentDto.inputs.UpdateDocumentInput) {
-    const transaction = await this.sequelize.transaction();
 
     try {
       // Optimistic Concurrency Control
       const document = await this.findOne({
         userUuid,
-        transaction,
       });
       assert(document, `Document not found for user ${userUuid}`)
-      assert(document.version === updateDto.version, `Document version mismatch. Expected ${updateDto.version}, got ${document.version}`)
+      // assert(document.version === updateDto.version, `Document version mismatch. Expected ${updateDto.version}, got ${document.version}`)
 
 
       const updateData = Buffer.from(updateDto.updateData, 'base64');
 
-      await document.update(
+      await this.update(
+        {
+          uuid: document.uuid
+        },
         {
           documentData: updateData,
           version: document.version + 1,
         },
-        { transaction },
       );
 
-      await transaction.commit();
 
       const response = {
         id: document.id,
@@ -129,7 +127,6 @@ export class DocumentService extends CommonService<
 
       return response;
     } catch (error) {
-      await transaction.rollback();
       throw error;
     }
   }
