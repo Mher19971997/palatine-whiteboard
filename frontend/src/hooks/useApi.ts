@@ -55,6 +55,16 @@ export const useDocument = (userUuid: string) => {
   });
 };
 
+export const useDocumentFindAll = () => {
+  return useQuery({
+    queryKey: ['documents'],
+    queryFn: () => documentAPI.findAll(),
+    retry: 1,
+  });
+};
+
+
+
 export const useCreateDocument = () => {
   const queryClient = useQueryClient();
 
@@ -74,10 +84,10 @@ export const useUpdateDocument = () => {
   const queryClient = useQueryClient();
 
   return useMutation({
-    mutationFn: ({ userUuid, data }: { userUuid: string; data: { updateData: string; version: number } }) =>
-      documentAPI.update(userUuid, data),
+    mutationFn: ({ data }: { data: { updateData: string; version: number } }) =>
+      documentAPI.update(data?.updateData?.data),
     onSuccess: (response, variables) => {
-      queryClient.setQueryData(['document', variables.userUuid], response.data);
+      queryClient.setQueryData(['document', variables], response.data);
     },
     onError: (error: any) => {
       console.error('Failed to update document:', error);

@@ -67,11 +67,14 @@ export const imageAPI = {
 // Document API
 export const documentAPI = {
     get: (userUuid: string) =>
-        apiClient.get<DocumentResponse>(`/document/${userUuid}`),
+        apiClient.get<DocumentResponse>(`/document`),
+
+    findAll: () =>
+        apiClient.get<DocumentResponse>(`/document`),
 
     create: (data: DocumentData & { userId: string }) =>
         apiClient.post<DocumentResponse>('/document', data),
 
-    update: (userUuid: string, data: { updateData: string; version: number }) =>
-        apiClient.put<DocumentResponse>(`/document/${userUuid}`, data),
+    update: (data: { updateData: string; version: number }) =>
+        apiClient.put<DocumentResponse>(`/document`, data),
 };

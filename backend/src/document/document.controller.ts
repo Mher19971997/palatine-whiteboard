@@ -1,4 +1,3 @@
-// src/document/document.controller.ts
 import {
   Controller,
   Get,
@@ -6,8 +5,7 @@ import {
   Put,
   Param,
   Body,
-  NotFoundException,
-  UseGuards
+  UseGuards,
 } from '@nestjs/common';
 import { ApiTags } from '@nestjs/swagger';
 import { DocumentService } from './document.service';
@@ -15,34 +13,49 @@ import { documentDto } from './dto';
 import { RolesGuard } from '../auth/guards/roles.guard';
 import { BearerUser } from '../user/dto/output';
 import { decorator } from '@palatine_whiteboard_backend/shared/src/decorator';
+import ms from 'ms';
 
 @ApiTags('Documents')
 @Controller('document')
 export class DocumentController {
   constructor(private readonly documentService: DocumentService) { }
 
-  @Get(':userId')
-  async getDocument(@Param('userId') userId: string) {
-    const document = await this.documentService.getDocument(userId);
+  @Get()
+  @UseGuards(RolesGuard)
+  // @decorator.cache.Store({ ttl: ms('1h') })
+  async findOne(
+    @decorator.user.User() user: BearerUser,
+  ) {
+    return this.documentService.findOne({ userUuid: user.userUuid });
+  }
 
-    if (!document) {
-      throw new NotFoundException(`Document not found for user ${userId}`);
-    }
-
-    return document;
+  @Get()
+  @UseGuards(RolesGuard)
+  async findAll(@decorator.user.User() user: BearerUser) {
+    return this.documentService.findAll({
+      userUuid: user.userUuid,
+      queryMeta: { order: { createdAt: 'DESC' } },
+    });
   }
 
   @Post()
   @UseGuards(RolesGuard)
-  async createDocument(@decorator.user.User() user: BearerUser, @Body() createDto: documentDto.inputs.CreateDocumentInput) {
-    return this.documentService.createDocument({ userUuid: user.userUuid, ...createDto });
+  async createDocument(
+    @decorator.user.User() user: BearerUser,
+    @Body() createDto: documentDto.inputs.CreateDocumentInput,
+  ) {
+    return this.documentService.createDocument({
+      userUuid: user.userUuid,
+      ...createDto,
+    });
   }
 
-  @Put(':userId')
+  @Put()
+  @UseGuards(RolesGuard)
   async updateDocument(
-    @Param('userId') userId: string,
+    @decorator.user.User() user: BearerUser,
     @Body() updateDto: documentDto.inputs.UpdateDocumentInput,
   ) {
-    return this.documentService.updateDocument(userId, updateDto);
+    return this.documentService.updateDocument(user, updateDto);
   }
 }

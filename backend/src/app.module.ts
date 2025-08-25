@@ -10,6 +10,7 @@ import { SequelizeModule } from '@palatine_whiteboard_backend/shared/src/sequeli
 import { FilesModule } from '@palatine_whiteboard_backend/shared/src/files/files.module';
 import { DocumentModule } from './document/document.module';
 import { CryptoService } from '@palatine_whiteboard_backend/shared/src/crypto/crypto.service';
+import { ImageModule } from './image/image.module';
 
 @Module({
   imports: [
@@ -20,7 +21,8 @@ import { CryptoService } from '@palatine_whiteboard_backend/shared/src/crypto/cr
     UserModule, 
     SequelizeModule,
     FilesModule,
-    DocumentModule
+    DocumentModule,
+    ImageModule
   ],
   controllers: [],
   providers: [],

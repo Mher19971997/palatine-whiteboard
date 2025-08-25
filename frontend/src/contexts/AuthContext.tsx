@@ -1,72 +1,56 @@
-import React, { createContext, useContext, useEffect, useState } from 'react';
-import { useQuery, useQueryClient } from '@tanstack/react-query';
-import { authAPI, userAPI } from '../api/endpoints';
-import { toast } from '../utils/toast';
+// contexts/AuthContext.tsx
+import React, { createContext, useContext, useEffect, useState } from "react";
 
 interface AuthContextType {
   isAuthenticated: boolean;
   userUuid: string | null;
-  login: (token: string) => void;
+  login: (access: string, refresh: string, userUuid: string) => void;
   logout: () => void;
-  isLoading: boolean;
 }
 
-const AuthContext = createContext<AuthContextType | null>(null);
-
-export const useAuth = () => {
-  const context = useContext(AuthContext);
-  if (!context) throw new Error('useAuth must be used within an AuthProvider');
-  return context;
-};
+const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
 export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const [isAuthenticated, setIsAuthenticated] = useState(false);
   const [userUuid, setUserUuid] = useState<string | null>(null);
-  const queryClient = useQueryClient();
 
-  const { data, isLoading } = useQuery({
-    queryKey: ['user'], // заменяем массив
-    queryFn: async () => {
-      const response = await userAPI.getProfile();
-      return response.data;
-    },
-    enabled: !!localStorage.getItem('access_token'),
-    onSuccess: (data: any) => {
-      setUserUuid(data.uuid);          // <-- make sure this is uncommented
-      setIsAuthenticated(true);        // <-- make sure this is uncommented
-    },
-    onError: () => {
-      logout();
-    },
-  });
-  useEffect(()=>{
-    //@ts-ignore
-    if(data){
-      setUserUuid(data.uuid);          // <-- make sure this is uncommented
+  useEffect(() => {
+    const access = localStorage.getItem("access_token");
+    const refresh = localStorage.getItem("refresh_token");
+    if (access && refresh) {
+      setIsAuthenticated(true);
+      setUserUuid(localStorage.getItem("user_uuid"));
+    } else {
+      setIsAuthenticated(false);
+      setUserUuid(null);
     }
+  }, []);
 
-  })
-  console.log(data,"datadata");
-  
-  const login = (token: string) => {
-    localStorage.setItem('access_token', token);
+  const login = (access: string, refresh: string, userUuid: string) => {
+    localStorage.setItem("access_token", access);
+    localStorage.setItem("refresh_token", refresh);
+    localStorage.setItem("user_uuid", userUuid);
     setIsAuthenticated(true);
-
-    queryClient.invalidateQueries({ queryKey: ['user'] });
-    toast.success('Successfully logged in!');
+    setUserUuid(userUuid);
   };
 
   const logout = () => {
-    localStorage.removeItem('access_token');
-    localStorage.removeItem('refresh_token');
+    localStorage.removeItem("access_token");
+    localStorage.removeItem("refresh_token");
+    localStorage.removeItem("user_uuid");
     setIsAuthenticated(false);
     setUserUuid(null);
-    queryClient.removeQueries({ queryKey: ['user'] });
   };
 
   return (
-    <AuthContext.Provider value={{ isAuthenticated, userUuid, login, logout, isLoading }}>
+    <AuthContext.Provider value={{ isAuthenticated, userUuid, login, logout }}>
       {children}
     </AuthContext.Provider>
   );
+};
+
+export const useAuth = () => {
+  const ctx = useContext(AuthContext);
+  if (!ctx) throw new Error("useAuth must be used within AuthProvider");
+  return ctx;
 };

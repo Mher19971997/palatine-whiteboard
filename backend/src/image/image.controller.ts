@@ -1,17 +1,17 @@
 // src/image/image.controller.ts
-import { Controller, Post, Body } from '@nestjs/common';
+import { Controller, Post, Body, UseGuards } from '@nestjs/common';
 import { ApiTags, ApiOperation, ApiResponse } from '@nestjs/swagger';
 import { ImageService } from './image.service';
+import { RolesGuard } from '../auth/guards/roles.guard';
 
 @ApiTags('Images')
-@Controller('api/images')
+@Controller('image')
 export class ImageController {
-  constructor(private readonly imageService: ImageService) {}
+  constructor(private readonly imageService: ImageService) { }
 
   @Post('generate')
-  @ApiOperation({ summary: 'Generate image from text prompt' })
-
-  async generateImage(@Body() generateDto: any){
+  @UseGuards(RolesGuard)
+  async generateImage(@Body() generateDto: any) {
     return this.imageService.generateImage(generateDto);
   }
 }

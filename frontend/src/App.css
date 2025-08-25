@@ -141,18 +141,29 @@
 }
 
 .toolbar-btn {
-  padding: 0.5rem 1rem;
-  background: #f8f9fa;
-  border: 1px solid #dee2e6;
-  border-radius: 4px;
+  background: #3b82f6;
+  color: white;
+  border: none;
+  border-radius: 6px;
+  padding: 8px 16px;
   cursor: pointer;
-  transition: all 0.2s;
+  font-size: 14px;
+  font-weight: 500;
+  transition: background-color 0.2s;
+  display: flex;
+  align-items: center;
+  gap: 6px;
 }
 
 .toolbar-btn:hover {
-  background: #e9ecef;
-  border-color: #adb5bd;
+  background: #2563eb;
 }
+
+.toolbar-btn:disabled {
+  background: #9ca3af;
+  cursor: not-allowed;
+}
+
 
 .logout-btn {
   background: #dc3545;
@@ -396,41 +407,42 @@
   .app-content {
     flex-direction: column;
   }
-  
+
   .sidebar {
     width: 100%;
     height: 200px;
   }
-  
+
   .doc-list {
     display: flex;
     overflow-x: auto;
     overflow-y: hidden;
   }
-  
+
   .doc-item {
     min-width: 150px;
     white-space: nowrap;
   }
-  
+
   .top-bar {
     padding: 0.5rem 1rem;
   }
-  
+
   .top-bar-actions {
     gap: 0.5rem;
   }
-  
+
   .toolbar-btn {
     padding: 0.25rem 0.5rem;
     font-size: 0.875rem;
   }
-  
+
   .image-widget {
     width: 95%;
     margin: 1rem;
   }
 }
+
 .env {
   position: fixed;
   top: 10px;

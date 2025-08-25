@@ -1,14 +1,13 @@
-import { Injectable } from '@nestjs/common';
+import { ConflictException, Injectable } from '@nestjs/common';
 import { InjectModel } from '@nestjs/sequelize';
-import { Sequelize } from 'sequelize-typescript';
 import { FilterService } from '@palatine_whiteboard_backend/shared/src/sequelize/filter.service';
 import { ConfigService } from '@palatine_whiteboard_backend/shared/src/config/config.service';
-import { CryptoService } from '@palatine_whiteboard_backend/shared/src/crypto/crypto.service';
 import { CommonService } from '@palatine_whiteboard_backend/shared/src/sequelize/common.service';
 import { Document } from '@palatine_whiteboard_backend/service/src/model/document/document';
 import { documentDto } from '@palatine_whiteboard_backend/src/document/dto';
 import { CacheService } from '@palatine_whiteboard_backend/shared/src/cache/cache.service';
 import assert from 'assert';
+import { BearerUser } from '../user/dto/output';
 
 @Injectable()
 export class DocumentService extends CommonService<
@@ -33,16 +32,14 @@ export class DocumentService extends CommonService<
   }
 
   async getDocument(userUuid: string) {
-    // 1. Проверяем Redis кеш
     const cacheKey = `${this.CACHE_PREFIX}${userUuid}`;
     const cached = await this.cacheService.get(cacheKey);
-    console.log(cached, 5555);
 
-    // 2. Загружаем из PostgreSQL
-    const document = await this.findOne({
-      userUuid,
-    });
+    if (cached) {
+      return JSON.parse(cached);
+    }
 
+    const document = await this.findOne({ userUuid });
     if (!document) {
       return null;
     }
@@ -55,22 +52,19 @@ export class DocumentService extends CommonService<
       updatedAt: document.updatedAt.toISOString(),
     };
 
-    // Кешируем результат
     await this.cacheService.set(cacheKey, this.CACHE_TTL, JSON.stringify(response));
-
     return response;
   }
 
   async createDocument(createDto: documentDto.inputs.CreateDocumentInput) {
-    //@ts-ignore
-    const documentData = Buffer.from(createDto.documentData, 'base64');
-    const dockumentRes = await this.findOne({ userUuid: createDto.userUuid })
-    if(dockumentRes){
-      return dockumentRes
+    const existing = await this.findOne({ userUuid: createDto.userUuid });
+    if (existing) {
+      return existing;
     }
+
     const document = await this.create({
       userUuid: createDto.userUuid,
-      documentData,
+      documentData: Buffer.from(createDto.documentData, 'base64'),
       version: createDto.version || 1,
     });
 
@@ -82,78 +76,54 @@ export class DocumentService extends CommonService<
       updatedAt: document.updatedAt.toISOString(),
     };
 
-    // Кешируем новый документ
-    const cacheKey = `${this.CACHE_PREFIX}${createDto.userId}`;
+    const cacheKey = `${this.CACHE_PREFIX}${createDto.userUuid}`;
     await this.cacheService.set(cacheKey, this.CACHE_TTL, JSON.stringify(response));
 
     return response;
   }
 
-  async updateDocument(userUuid: string, updateDto: documentDto.inputs.UpdateDocumentInput) {
+  async updateDocument(user: BearerUser, updateDto: documentDto.inputs.UpdateDocumentInput) {
+    const document = await this.findOne({ userUuid: user.userUuid });
+    assert(document, `Document not found for uuid ${user.userUuid}`);
 
-    try {
-      // Optimistic Concurrency Control
-      const document = await this.findOne({
-        userUuid,
-      });
-      assert(document, `Document not found for user ${userUuid}`)
-      // assert(document.version === updateDto.version, `Document version mismatch. Expected ${updateDto.version}, got ${document.version}`)
+    // if (updateDto.version && document.version !== updateDto.version) {
+    //   throw new ConflictException(
+    //     `Document version mismatch. Expected ${updateDto.version}, got ${document.version}`,
+    //   );
+    // }
 
+    await this.update(
+      { uuid: document.uuid },
+      {
+        documentData: Buffer.from(updateDto.updateData, 'base64'),
+        version: document.version + 1,
+      },
+    );
 
-      const updateData = Buffer.from(updateDto.updateData, 'base64');
+    // Инвалидация кеша
+    const cacheKey = `${this.CACHE_PREFIX}${document.userUuid}`;
+    await this.cacheService.del(cacheKey);
 
-      await this.update(
-        {
-          uuid: document.uuid
-        },
-        {
-          documentData: updateData,
-          version: document.version + 1,
-        },
-      );
-
-
-      const response = {
-        id: document.id,
-        userId: document.userId,
-        documentData: updateDto.updateData,
-        version: document.version,
-        updatedAt: document.updatedAt.toISOString(),
-      };
-
-      // Обновляем кеш
-      const cacheKey = `${this.CACHE_PREFIX}${userUuid}`;
-      await this.cacheService.set(cacheKey, this.CACHE_TTL, JSON.stringify(response));
-
-      return response;
-    } catch (error) {
-      throw error;
-    }
+    // Возвращаем свежий документ
+    return this.findOne({ userUuid: user.userUuid });
   }
 
-  // Метод для сохранения Y.js updates с дебаунсингом
+
   async saveDocumentUpdate(userUuid: string, updateData: Buffer): Promise<void> {
-    // Сохраняем в Redis немедленно
     const cacheKey = `${this.CACHE_PREFIX}${userUuid}:temp`;
     await this.cacheService.set(cacheKey, 300, updateData.toString('base64')); // 5 min TTL
-
-    // Планируем сохранение в PostgreSQL с дебаунсингом
     this.schedulePostgresSave(userUuid, updateData);
   }
 
   private schedulePostgresSave(userUuid: string, data: Buffer): void {
-    // Отменяем предыдущий таймер, если есть
     const existingTimeout = this.saveTimeouts.get(userUuid);
     if (existingTimeout) {
       clearTimeout(existingTimeout);
     }
 
-    // Устанавливаем новый таймер на 30 секунд
     const timeout = setTimeout(async () => {
       try {
-        const document = await this.findOne({
-          userUuid
-        });
+        const document = await this.findOne({ userUuid });
 
         if (document) {
           await document.update({
@@ -168,19 +138,13 @@ export class DocumentService extends CommonService<
           });
         }
 
-        // Очищаем временный кеш
-        const tempCacheKey = `${this.CACHE_PREFIX}${userUuid}:temp`;
-        await this.cacheService.del(tempCacheKey);
-
-        // Обновляем основной кеш
-        const cacheKey = `${this.CACHE_PREFIX}${userUuid}`;
-        await this.cacheService.del(cacheKey);
-
+        await this.cacheService.del(`${this.CACHE_PREFIX}${userUuid}:temp`);
+        await this.cacheService.del(`${this.CACHE_PREFIX}${userUuid}`);
         this.saveTimeouts.delete(userUuid);
       } catch (error) {
         console.error(`Failed to save document for user ${userUuid}:`, error);
       }
-    }, 30000);
+    }, 30_000);
 
     this.saveTimeouts.set(userUuid, timeout);
   }

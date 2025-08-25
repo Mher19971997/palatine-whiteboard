@@ -20,19 +20,7 @@ interface EditorProviderProps {
   children: React.ReactNode;
 }
 
-// Функция безопасного преобразования Uint8Array в Base64
-function uint8ArrayToBase64(bytes: Uint8Array) {
-  let binary = '';
-  const chunkSize = 0x8000;
-  for (let i = 0; i < bytes.length; i += chunkSize) {
-    const chunk = bytes.subarray(i, i + chunkSize);
-    binary += String.fromCharCode(...chunk);
-  }
-  return btoa(binary);
-}
-
-
-
+// ------------------- EditorProvider -------------------
 export function EditorProvider({ children }: EditorProviderProps) {
   const { userUuid } = useAuth();
   const { data: documentData } = useDocument(userUuid || '');
@@ -41,60 +29,69 @@ export function EditorProvider({ children }: EditorProviderProps) {
 
   const { editor, collection } = useMemo(() => initEditor(), []);
 
-  // useRef для хранения флага, чтобы создать документ только один раз
   const hasCreatedRef = useRef(false);
-  function bufferToBase64(bufferObj: { type: string, data: number[] }) {
+
+  // ------------------- Конвертация буфера в Base64 -------------------
+  function bufferToBase64(bufferObj: { type: string; data: number[] }) {
     const uint8 = new Uint8Array(bufferObj.data);
+    const chunkSize = 0x8000; // 32KB
     let binary = '';
-    for (let i = 0; i < uint8.length; i++) {
-      binary += String.fromCharCode(uint8[i]);
+    for (let i = 0; i < uint8.length; i += chunkSize) {
+      const chunk = uint8.subarray(i, i + chunkSize);
+      binary += String.fromCharCode(...chunk);
     }
     return btoa(binary);
   }
-
+  const versionRef = useRef<number>(documentData?.version || 1);
 
   useEffect(() => {
-    if (!userUuid) return;
+    if (!userUuid || !editor.doc.spaceDoc) return;
 
     let syncService: DocumentSyncService | null = null;
 
-    if (documentData?.documentData) {
-      syncService = new DocumentSyncService(
-        editor.doc.spaceDoc,
-        userUuid,
-        updateDocumentMutation.mutate,
-        documentData?.version
-      );
-      try {
-        syncService.loadDocument(bufferToBase64(documentData?.documentData));
-      } catch (err) {
-        console.error('Failed to load document:', err);
+    const init = async () => {
+      if (documentData?.documentData) {
+        versionRef.current = documentData.version || 1;
+
+        syncService = new DocumentSyncService(
+          editor.doc.spaceDoc,
+          userUuid,
+          (update) => updateDocumentMutation.mutate({ data: { updateData: update, version: versionRef.current } }),
+          versionRef.current
+        );
+
+        await syncService.loadDocument(bufferToBase64(documentData.documentData));
+      } else if (!hasCreatedRef.current) {
+        const docState = Y.encodeStateAsUpdate(editor.doc.spaceDoc);
+        if (docState.length === 0) return; // пропускаем
+
+        const base64Data = bufferToBase64({ type: 'Buffer', data: Array.from(docState) });
+
+        createDocumentMutation.mutate({
+          userId: userUuid,
+          documentData: base64Data,
+          version: 1,
+        }, {
+          onSuccess: (res) => {
+            versionRef.current = res.version;
+          }
+        });
+
+        hasCreatedRef.current = true;
+
+        syncService = new DocumentSyncService(
+          editor.doc.spaceDoc,
+          userUuid,
+          (update) => updateDocumentMutation.mutate({ data: { updateData: update, version: versionRef.current } }),
+          1
+        );
       }
-    } else if (!hasCreatedRef.current) {
-      const docState = Y.encodeStateAsUpdate(editor.doc.spaceDoc);
-      const base64Data = uint8ArrayToBase64(docState);
-
-      createDocumentMutation.mutate({
-        userId: userUuid,
-        documentData: base64Data,
-        version: 1,
-      });
-
-      hasCreatedRef.current = true;
-
-      syncService = new DocumentSyncService(
-        editor.doc.spaceDoc,
-        userUuid,
-        updateDocumentMutation.mutate,
-        1
-      );
-    }
-
-    return () => {
-      syncService?.destroy();
     };
-  }, [userUuid, documentData?.documentData]);
 
+    init();
+
+    return () => syncService?.destroy();
+  }, [userUuid, documentData?.documentData, editor.doc.spaceDoc]);
 
   return (
     <EditorContext.Provider value={{ editor, collection }}>

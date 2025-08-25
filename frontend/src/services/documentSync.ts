@@ -7,7 +7,7 @@ export class DocumentSyncService {
   private updateDocument: ReturnType<typeof useUpdateDocument>['mutate'];
   private version: number = 1;
   private saveTimeout: NodeJS.Timeout | null = null;
-  private readonly SAVE_DEBOUNCE_MS = 5000; // 5 seconds
+  private readonly SAVE_DEBOUNCE_MS = 5000; // 5 секунд
 
   constructor(
     doc: Y.Doc,
@@ -23,50 +23,90 @@ export class DocumentSyncService {
     this.setupUpdateListener();
   }
 
+  // ------------------- Слушатель изменений -------------------
   private setupUpdateListener() {
-    this.doc.on('update', (update: Uint8Array) => {
-      this.debouncedSave(update);
+    this.doc.on('update', (_update: Uint8Array) => {
+      this.debouncedSave();
     });
   }
 
-  private debouncedSave(update: Uint8Array) {
-    if (this.saveTimeout) {
-      clearTimeout(this.saveTimeout);
-    }
+  // ------------------- Дебаунс сохранения -------------------
+  private debouncedSave() {
+    if (this.saveTimeout) clearTimeout(this.saveTimeout);
 
     this.saveTimeout = setTimeout(() => {
       this.saveDocument();
     }, this.SAVE_DEBOUNCE_MS);
   }
 
-  private async saveDocument() {
-    try {
-      const docState = Y.encodeStateAsUpdate(this.doc);
-      const base64Data = btoa(String.fromCharCode(...docState));
+  // ------------------- Сохранение документа -------------------
+private saveDocument() {
+  try {
+    const docState = Y.encodeStateAsUpdate(this.doc);
 
-      this.updateDocument({
-        userUuid: this.userUuid,
-        data: { 
-          updateData: base64Data,
-          version: this.version,
-        },
-      });
-
-      this.version += 1;
-    } catch (error) {
-      console.error('Failed to save document:', error);
+    if (docState.length === 0) {
+      console.log('⚠️ Empty update, skipping save');
+      return;
     }
+
+    const base64Data = this.uint8ArrayToBase64(docState);
+    this.updateDocument({
+      data: {
+        updateData: base64Data,
+        version: this.version,
+      },
+    });
+
+    this.version += 1;
+  } catch (error) {
+    console.error('Failed to save document:', error);
+  }
+}
+
+  // ------------------- Безопасная конвертация Uint8Array → Base64 -------------------
+  private uint8ArrayToBase64(bytes: Uint8Array): string {
+    let binary = '';
+    const chunkSize = 0x8000; // 32KB
+    for (let i = 0; i < bytes.length; i += chunkSize) {
+      const chunk = bytes.subarray(i, i + chunkSize);
+      binary += String.fromCharCode(...chunk);
+    }
+    return btoa(binary);
   }
 
-  public loadDocument(base64Data: string) {
+  // ------------------- Безопасная конвертация Base64 → Uint8Array -------------------
+  private base64ToUint8Array(base64: string): Uint8Array {
+    const binary = atob(base64);
+    const len = binary.length;
+    const bytes = new Uint8Array(len);
+    const chunkSize = 0x8000; // 32KB
+    for (let i = 0; i < len; i += chunkSize) {
+      const chunk = binary.slice(i, i + chunkSize);
+      for (let j = 0; j < chunk.length; j++) {
+        bytes[i + j] = chunk.charCodeAt(j);
+      }
+    }
+    return bytes;
+  }
+
+  // ------------------- Загрузка документа -------------------
+  public async loadDocument(base64Data: string) {
     try {
-      const binaryData = Uint8Array.from(atob(base64Data), c => c.charCodeAt(0));
+      if (!base64Data) throw new Error('No document data provided');
+
+      const binaryData = this.base64ToUint8Array(base64Data);
+      // Применяем обновление Yjs напрямую
+      // Это полностью синхронизирует документ с сервером
       Y.applyUpdate(this.doc, binaryData);
-    } catch (error) {
-      console.error('Failed to load document:', error);
+
+      console.log('Document loaded successfully');
+    } catch (err) {
+      console.error('Failed to load document:', err);
     }
   }
 
+
+  // ------------------- Очистка -------------------
   public destroy() {
     if (this.saveTimeout) {
       clearTimeout(this.saveTimeout);

@@ -49,7 +49,7 @@ const EditorPage = () => {
 
 const ProtectedRoute: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const { isAuthenticated } = useAuth();
-  
+
   return isAuthenticated ? <>{children}</> : <Navigate to="/auth" />;
 };
 
@@ -59,9 +59,9 @@ const AppRoutes = () => {
   return (
     <BrowserRouter>
       <Routes>
-        <Route 
-          path="/auth" 
-          element={isAuthenticated ? <Navigate to="/" /> : <AuthPage />} 
+        <Route
+          path="/auth"
+          element={isAuthenticated ? <Navigate to="/" /> : <AuthPage />}
         />
         <Route
           path="/"
