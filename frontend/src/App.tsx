@@ -6,7 +6,6 @@ import { EditorProvider } from './editor/context';
 import { LoginForm } from './components/auth/LoginForm';
 import { RegisterForm } from './components/auth/RegisterForm';
 import TopBar from './components/TopBar';
-import Sidebar from './components/Sidebar';
 import EditorContainer from './components/EditorContainer';
 import './App.css';
 
@@ -39,7 +38,7 @@ const EditorPage = () => {
       <div className="app">
         <TopBar />
         <div className="app-content">
-          <Sidebar />
+          <div className='sidebar' />
           <EditorContainer />
         </div>
       </div>

@@ -32,29 +32,28 @@ export class DocumentService extends CommonService<
   }
 
   async getDocument(userUuid: string) {
-    const cacheKey = `${this.CACHE_PREFIX}${userUuid}`;
+    const cacheKey = `${this.CACHE_PREFIX}${userUuid}:temp`;
     const cached = await this.cacheService.get(cacheKey);
 
     if (cached) {
-      return JSON.parse(cached);
+      return { documentData: cached }; // возвращаем последний кэш
     }
 
     const document = await this.findOne({ userUuid });
-    if (!document) {
-      return null;
-    }
+    if (!document) return null;
 
     const response = {
       uuid: document.uuid,
       userUuid: document.userUuid,
-      documentData: document.documentData,
+      documentData: document.documentData.toString('base64'), // в Base64
       version: document.version,
       updatedAt: document.updatedAt.toISOString(),
     };
 
-    await this.cacheService.set(cacheKey, this.CACHE_TTL, JSON.stringify(response));
+    await this.cacheService.set(cacheKey, response.documentData, this.CACHE_TTL);
     return response;
   }
+
 
   async createDocument(createDto: documentDto.inputs.CreateDocumentInput) {
     const existing = await this.findOne({ userUuid: createDto.userUuid });
@@ -72,13 +71,13 @@ export class DocumentService extends CommonService<
     const response = {
       uuid: document.uuid,
       userUuid: document.userUuid,
-      documentData: createDto.documentData,
+      documentData: createDto.documentData.toString('base64'),
       version: document.version,
       updatedAt: document.updatedAt.toISOString(),
     };
 
     const cacheKey = `${this.CACHE_PREFIX}${createDto.userUuid}`;
-    await this.cacheService.set(cacheKey, this.CACHE_TTL, JSON.stringify(response));
+    await this.cacheService.set(cacheKey, response.documentData, this.CACHE_TTL);
 
     return response;
   }
@@ -112,7 +111,7 @@ export class DocumentService extends CommonService<
 
   async saveDocumentUpdate(userUuid: string, updateData: Buffer): Promise<void> {
     const cacheKey = `${this.CACHE_PREFIX}${userUuid}:temp`;
-    await this.cacheService.set(cacheKey, 300, updateData.toString('base64')); // 5 min TTL
+    await this.cacheService.set(cacheKey, updateData.toString('base64'), 300); // 5 min TTL
     this.schedulePostgresSave(userUuid, updateData);
   }
 
@@ -127,10 +126,12 @@ export class DocumentService extends CommonService<
         const document = await this.findOne({ userUuid });
 
         if (document) {
-          await document.update({
-            documentData: data,
-            version: document.version + 1,
-          });
+          await this.update(
+            { uuid: document.uuid },
+            {
+              documentData: data,
+              version: document.version + 1,
+            });
         } else {
           await this.create({
             userUuid,

@@ -26,7 +26,7 @@ export class DocumentController {
   async findOne(
     @decorator.user.User() user: BearerUser,
   ) {
-    return this.documentService.findOne({ userUuid: user.userUuid });
+    return this.documentService.getDocument(user.userUuid);
   }
 
   @Get()

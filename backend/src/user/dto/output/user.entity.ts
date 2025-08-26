@@ -32,7 +32,8 @@ export class UserEntity extends CommonEntity {
 }
 
 export class BearerUser {
-  userUuid: UUID;
+  userUuid?: UUID;
+  uuid?: UUID;
   authorization: string;
 }
 export const excludeFields = ['password', 'secret'];

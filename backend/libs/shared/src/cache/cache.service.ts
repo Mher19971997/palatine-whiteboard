@@ -7,12 +7,13 @@ import { json5 } from '@palatine_whiteboard_backend/shared/src/util/parser/json5
 export class CacheService {
   public client: RedisClientType<RedisDefaultModules & RedisModules, RedisFunctions, RedisScripts>;
 
-  constructor(private redis: Redis) {}
+  constructor(private redis: Redis) { }
 
   async set(key: any, val: any, opt: any) {
     await this.conn();
     return this.client.set(key, json5.stringify(val), opt);
   }
+
 
   async get(key: any) {
     await this.conn();

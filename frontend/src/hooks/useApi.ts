@@ -46,11 +46,10 @@ export const useGenerateImage = () => {
 };
 
 // Document hooks
-export const useDocument = (userUuid: string) => {
+export const useDocument = () => {
   return useQuery({
-    queryKey: ['document', userUuid],
-    queryFn: () => documentAPI.get(userUuid),
-    enabled: !!userUuid,
+    queryKey: ['document'],
+    queryFn: () => documentAPI.get(),
     retry: 1,
   });
 };

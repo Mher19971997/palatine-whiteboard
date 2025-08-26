@@ -66,7 +66,7 @@ export const imageAPI = {
 
 // Document API
 export const documentAPI = {
-    get: (userUuid: string) =>
+    get: () =>
         apiClient.get<DocumentResponse>(`/document`),
 
     findAll: () =>
