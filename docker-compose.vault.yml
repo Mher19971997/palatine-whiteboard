@@ -1,0 +1,25 @@
+version: '3'
+services:
+  vault:
+    image: hashicorp/vault:1.17
+    container_name: vault
+    ports:
+      - "8200:8200"
+    environment:
+      VAULT_DEV_ROOT_TOKEN_ID: ${VAULT_DEV_ROOT_TOKEN_ID}
+      VAULT_DEV_LISTEN_ADDRESS: ${VAULT_DEV_LISTEN_ADDRESS}
+    cap_add:
+      - IPC_LOCK
+    volumes:
+      - vault-data:/vault/data
+    env_file:
+      - ./.env
+    networks:
+      - app-network
+
+volumes:
+  vault-data:
+
+networks:
+  app-network:
+    driver: bridge

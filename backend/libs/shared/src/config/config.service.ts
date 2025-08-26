@@ -14,7 +14,7 @@ export class ConfigService {
   constructor(@Inject(constants.CONFIG_OPTIONS) options: ConfigOptions) {
     const cwd = process.cwd();
     
-    const envFile = path.resolve(cwd, options.folder, `local.env`);
+    const envFile = path.resolve(cwd, '../.env');
     const lConfigMap = dotenv.config({ path: envFile }).parsed;
 
     const confFile = path.resolve(cwd, options.folder, 'conf.json5');

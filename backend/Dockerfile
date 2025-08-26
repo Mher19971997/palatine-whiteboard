@@ -13,9 +13,6 @@ COPY . .
 # Install dependencies
 RUN npm ci
 
-# Run migrations
-RUN npm run migration:up
-
 # Build the NestJS application
 RUN npm run build
 
@@ -23,4 +20,9 @@ RUN npm run build
 EXPOSE 6001
 
 # Command to run the application
-CMD ["npm", "run", "start:prod"]
+COPY entrypoint.sh ./
+RUN chmod +x ./entrypoint.sh
+RUN [ -f ./entrypoint.sh ] && chmod +x ./entrypoint.sh || true
+
+# Define the entrypoint, ensure entrypoint.sh exists
+ENTRYPOINT ["./entrypoint.sh"]

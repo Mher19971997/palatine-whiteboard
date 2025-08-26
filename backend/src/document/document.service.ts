@@ -64,6 +64,7 @@ export class DocumentService extends CommonService<
 
     const document = await this.create({
       userUuid: createDto.userUuid,
+      //@ts-ignore
       documentData: Buffer.from(createDto.documentData, 'base64'),
       version: createDto.version || 1,
     });
