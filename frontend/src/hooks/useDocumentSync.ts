@@ -34,7 +34,7 @@ export function useDocumentSync({ doc, onDocumentUpdate }: any) {
     const accessToken = localStorage.getItem("access_token");
     if (!accessToken) return;
 
-    const socket = io("http://localhost:6001", {
+    const socket = io(import.meta.env.VITE_SOCKET_API_URL, {
       query: { token: accessToken },
       transports: ["websocket"],
     });
