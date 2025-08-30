@@ -21,7 +21,13 @@
     "noUnusedParameters": true,
     "erasableSyntaxOnly": true,
     "noFallthroughCasesInSwitch": true,
-    "noUncheckedSideEffectImports": true
+    "noUncheckedSideEffectImports": true,
+
+    /* ✅ alias */
+    "baseUrl": "./",
+    "paths": {
+      "@palatine_whiteboard_frontend/*": ["src/*"]
+    }
   },
   "include": ["src"]
 }

@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
-import { useEditor } from '../editor/context';
-import { useGenerateImage } from '../hooks/useApi';
+import { useEditor } from '@palatine_whiteboard_frontend/editor/context';
+import { useGenerateImage } from '@palatine_whiteboard_frontend/hooks';
 
 interface ImageWidgetProps {
   onClose: () => void;
@@ -17,24 +17,24 @@ const ImageWidget: React.FC<ImageWidgetProps> = ({ onClose }) => {
     try {
       const response = await generateImageMutation.mutateAsync({ prompt });
       const imageUrl = response.data.imageUrl;
-      
+
       // Insert image into the editor
       const doc = editor.doc;
       if (doc) {
         const pageBlocks = doc.getBlockByFlavour('affine:page');
         if (pageBlocks.length > 0) {
           const pageBlock = pageBlocks[0];
-          
+
           let noteBlocks = doc.getBlockByFlavour('affine:note');
           let noteBlock;
-          
+
           if (noteBlocks.length === 0) {
             const noteId = doc.addBlock('affine:note', {}, pageBlock.id);
             noteBlock = doc.getBlockById(noteId)!;
           } else {
             noteBlock = noteBlocks[0];
           }
-          
+
           doc.addBlock('affine:image', {
             sourceId: imageUrl,
             caption: prompt,
@@ -43,7 +43,7 @@ const ImageWidget: React.FC<ImageWidgetProps> = ({ onClose }) => {
           }, noteBlock.id);
         }
       }
-      
+
       setPrompt('');
       onClose();
     } catch (error) {
@@ -64,9 +64,9 @@ const ImageWidget: React.FC<ImageWidgetProps> = ({ onClose }) => {
       <div className="image-widget">
         <div className="image-widget-header">
           <h3>Generate Image</h3>
-          <button 
-            onClick={onClose} 
-            className="close-button" 
+          <button
+            onClick={onClose}
+            className="close-button"
             disabled={generateImageMutation.isLoading}
           >
             ×
@@ -98,9 +98,9 @@ const ImageWidget: React.FC<ImageWidgetProps> = ({ onClose }) => {
                 'Generate Image'
               )}
             </button>
-            <button 
-              onClick={onClose} 
-              className="cancel-button" 
+            <button
+              onClick={onClose}
+              className="cancel-button"
               disabled={generateImageMutation.isLoading}
             >
               Cancel

@@ -14,7 +14,7 @@ import { BearerUser } from '../user/dto/output';
 import { AuthService } from '../auth/auth.service';
 
 interface UpdateMessage {
-  updateData: string; // Base64
+  updateData: any; // Base64
 }
 
 interface ClientData {
@@ -102,15 +102,17 @@ export class DocumentGateway implements OnGatewayConnection, OnGatewayDisconnect
     
     try {
       // Валидация данных
-      if (!data.updateData || typeof data.updateData !== 'string') {
-        client.emit('error', { message: 'Invalid update data format' });
-        return;
-      }
+      // if (!data.updateData || typeof data.updateData !== 'string') {
+      //   client.emit('error', { message: 'Invalid update data format' });
+      //   return;
+      // }
 
-      const buffer = Buffer.from(data.updateData, 'base64');
+      // const buffer = Buffer.from(data.updateData, 'base64');
 
       // 1️⃣ Сохраняем в Redis (асинхронно)
-      await this.documentService.saveDocumentUpdate(user.uuid, buffer)
+      console.log(data,"datadatadata");
+      
+      await this.documentService.updateDocument({userUuid: user.uuid, authorization: ''}, {updateData: data.updateData})
 
       // 2️⃣ Рассылаем ВСЕМ клиентам этого пользователя (включая отправителя)
       // Это важно для синхронизации между вкладками

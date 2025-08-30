@@ -1,7 +1,7 @@
 import React from 'react';
 import { useForm } from 'react-hook-form';
-import { useRegister } from '../../hooks/useApi';
-import type { RegisterData } from '../../api/endpoints';
+import { useRegister } from '@palatine_whiteboard_frontend/hooks';
+import type { RegisterData } from '@palatine_whiteboard_frontend/api/types';
 
 interface RegisterFormProps {
   onSwitchToLogin: () => void;

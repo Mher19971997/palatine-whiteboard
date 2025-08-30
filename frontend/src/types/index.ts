@@ -4,11 +4,8 @@ export interface User {
 }
 
 export interface DocumentData {
-  id: number;
-  userId: string;
   documentData: string;
   version: number;
-  updatedAt: string;
 }
 
 export interface ImageGenerationRequest {

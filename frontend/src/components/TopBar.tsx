@@ -1,6 +1,6 @@
-import React, { useState } from 'react';
-import ImageWidget from './ImageWidget';
-import { useAuth } from '../contexts/AuthContext';
+import { useState } from 'react';
+import ImageWidget from '@palatine_whiteboard_frontend/components/ImageWidget';
+import { useAuth } from '@palatine_whiteboard_frontend/contexts/AuthContext';
 
 const TopBar = () => {
   const [showImageWidget, setShowImageWidget] = useState(false);

@@ -9,7 +9,6 @@ export const apiClient = axios.create({
   },
 });
 
-// Добавляем interceptor для автоматического добавления токена
 apiClient.interceptors.request.use((config) => {
   const token = localStorage.getItem('access_token');
   if (token) {
@@ -18,7 +17,6 @@ apiClient.interceptors.request.use((config) => {
   return config;
 });
 
-// Обработка ошибок авторизации
 apiClient.interceptors.response.use(
   (response) => response,
   (error) => {

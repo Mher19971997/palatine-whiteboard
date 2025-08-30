@@ -1,15 +1,20 @@
 import { AffineEditorContainer } from '@blocksuite/presets';
 import { DocCollection } from '@blocksuite/store';
-import { createContext, useContext, useEffect, useMemo, useRef } from 'react';
+import { createContext, useContext, useEffect, useMemo, useRef, useState } from 'react';
 import * as Y from 'yjs';
-import { useAuth } from '../contexts/AuthContext';
-import { useDocument, useCreateDocument, useUpdateDocument } from '../hooks/useApi';
-import { DocumentSyncService } from '../services/documentSync';
-import { initEditor } from './editor';
+import { useAuth } from '@palatine_whiteboard_frontend/contexts/AuthContext';
+import { useDocument, useCreateDocument, useDocumentSync } from '@palatine_whiteboard_frontend/hooks';
+import { DocumentSyncService } from '@palatine_whiteboard_frontend/services/documentSync';
+import { initEditor } from '@palatine_whiteboard_frontend/editor/editor';
+import { bufferToBase64 } from '@palatine_whiteboard_frontend/shared/utils';
 
 export const EditorContext = createContext<{
   editor: AffineEditorContainer;
   collection: DocCollection;
+  ydoc?: Y.Doc;
+  isConnected?: boolean;
+  isLoading?: boolean;
+  error?: string | null;
 } | null>(null);
 
 export function useEditor() {
@@ -20,60 +25,49 @@ interface EditorProviderProps {
   children: React.ReactNode;
 }
 
-// ------------------- EditorProvider -------------------
 export function EditorProvider({ children }: EditorProviderProps) {
   const { userUuid } = useAuth();
-  const { data: documentData } = useDocument(userUuid || '');
+  const { data: documentData } = useDocument();
   const createDocumentMutation = useCreateDocument();
-  const updateDocumentMutation = useUpdateDocument();
 
   const { editor, collection } = useMemo(() => initEditor(), []);
+  const [error, setError] = useState<string | null>(null);
+  const [isLoading, setIsLoading] = useState(true);
 
   const hasCreatedRef = useRef(false);
 
-  // ------------------- Конвертация буфера в Base64 -------------------
-  function bufferToBase64(bufferObj: { type: string; data: number[] }) {
-    const uint8 = new Uint8Array(bufferObj.data);
-    const chunkSize = 0x8000; // 32KB
-    let binary = '';
-    for (let i = 0; i < uint8.length; i += chunkSize) {
-      const chunk = uint8.subarray(i, i + chunkSize);
-      binary += String.fromCharCode(...chunk);
-    }
-    return btoa(binary);
-  }
-  const versionRef = useRef<number>(documentData?.version || 1);
+  const versionRef = useRef<number>(documentData?.data?.version || 1);
+  const { sendUpdate, isConnected } = useDocumentSync({ doc: editor.doc.spaceDoc });
 
   useEffect(() => {
-    if (!userUuid || !editor.doc.spaceDoc) return;
+    if (!editor.doc.spaceDoc) return;
 
     let syncService: DocumentSyncService | null = null;
 
     const init = async () => {
-      if (documentData?.documentData) {
-        versionRef.current = documentData.version || 1;
+      if (documentData?.data?.documentData) {
+        versionRef.current = documentData?.data?.version || 1;
 
         syncService = new DocumentSyncService(
           editor.doc.spaceDoc,
-          userUuid,
-          (update) => updateDocumentMutation.mutate({ data: { updateData: update, version: versionRef.current } }),
+          (update: any) => sendUpdate(update),
           versionRef.current
         );
 
-        await syncService.loadDocument(bufferToBase64(documentData.documentData));
+        await syncService.loadDocument(bufferToBase64(documentData?.data?.documentData));
+        setIsLoading(false)
       } else if (!hasCreatedRef.current) {
         const docState = Y.encodeStateAsUpdate(editor.doc.spaceDoc);
-        if (docState.length === 0) return; // пропускаем
+        if (docState.length === 0) return;
 
         const base64Data = bufferToBase64({ type: 'Buffer', data: Array.from(docState) });
 
         createDocumentMutation.mutate({
-          userId: userUuid,
           documentData: base64Data,
           version: 1,
         }, {
           onSuccess: (res) => {
-            versionRef.current = res.version;
+            versionRef.current = res.data.version;
           }
         });
 
@@ -81,20 +75,20 @@ export function EditorProvider({ children }: EditorProviderProps) {
 
         syncService = new DocumentSyncService(
           editor.doc.spaceDoc,
-          userUuid,
-          (update) => updateDocumentMutation.mutate({ data: { updateData: update, version: versionRef.current } }),
+          (update: any) => sendUpdate(update),
           1
         );
+        setIsLoading(false)
       }
     };
 
     init();
 
     return () => syncService?.destroy();
-  }, [userUuid, documentData?.documentData, editor.doc.spaceDoc]);
+  }, [userUuid, documentData?.data?.documentData, editor.doc.spaceDoc]);
 
   return (
-    <EditorContext.Provider value={{ editor, collection }}>
+    <EditorContext.Provider value={{ editor, collection, error, isLoading, isConnected }}>
       {children}
     </EditorContext.Provider>
   );

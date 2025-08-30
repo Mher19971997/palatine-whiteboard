@@ -32,13 +32,9 @@ export class AuthService {
   }
 
   async validateUser(token: string): Promise<Partial<any> | null> {
-    console.log(11111);
-    
     const data = this.jwtService.decode(token) as { user: string };
-    console.log(2222);
     
     const user = await this.userService.findOne({ uuid: data.user });
-    console.log(2222, user);
     
     if (user) {
       // this.jwtService.verify(token, { secret: user.secret });

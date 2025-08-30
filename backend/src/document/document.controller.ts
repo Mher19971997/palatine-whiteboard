@@ -56,6 +56,8 @@ export class DocumentController {
     @decorator.user.User() user: BearerUser,
     @Body() updateDto: documentDto.inputs.UpdateDocumentInput,
   ) {
+    console.log(updateDto,44445455555);
+    
     return this.documentService.updateDocument(user, updateDto);
   }
 }

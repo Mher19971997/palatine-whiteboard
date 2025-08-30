@@ -32,12 +32,12 @@ export class DocumentService extends CommonService<
   }
 
   async getDocument(userUuid: string) {
-    const cacheKey = `${this.CACHE_PREFIX}${userUuid}:temp`;
-    const cached = await this.cacheService.get(cacheKey);
+    // const cacheKey = `${this.CACHE_PREFIX}${userUuid}:temp`;
+    // const cached = await this.cacheService.get(cacheKey);
 
-    if (cached) {
-      return { documentData: cached }; // возвращаем последний кэш
-    }
+    // if (cached) {
+    //   return { documentData: cached }; // возвращаем последний кэш
+    // }
 
     const document = await this.findOne({ userUuid });
     if (!document) return null;
@@ -45,12 +45,12 @@ export class DocumentService extends CommonService<
     const response = {
       uuid: document.uuid,
       userUuid: document.userUuid,
-      documentData: document.documentData.toString('base64'), // в Base64
+      documentData: document.documentData,
       version: document.version,
       updatedAt: document.updatedAt.toISOString(),
     };
 
-    await this.cacheService.set(cacheKey, response.documentData, this.CACHE_TTL);
+    // await this.cacheService.set(cacheKey, response.documentData, this.CACHE_TTL);
     return response;
   }
 
@@ -91,15 +91,16 @@ export class DocumentService extends CommonService<
     //     `Document version mismatch. Expected ${updateDto.version}, got ${document.version}`,
     //   );
     // }
-
-    await this.update(
+    
+    const aaaa = await this.update(
       { uuid: document.uuid },
       {
-        documentData: Buffer.from(updateDto.updateData, 'base64'),
+        documentData: Buffer.from(updateDto?.updateData?.data?.updateData??updateDto.updateData, 'base64'),
         version: document.version + 1,
       },
     );
-
+    console.log(44444444444,aaaa.documentData);
+    
     // Инвалидация кеша
     const cacheKey = `${this.CACHE_PREFIX}${document.userUuid}`;
     await this.cacheService.del(cacheKey);
