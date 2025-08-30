@@ -8,56 +8,60 @@ interface ImageWidgetProps {
 
 const ImageWidget: React.FC<ImageWidgetProps> = ({ onClose }) => {
   const [prompt, setPrompt] = useState('');
-  const { editor } = useEditor()!;
+  const { editor, isLoading: editorLoading } = useEditor() || {};
   const generateImageMutation = useGenerateImage();
 
   const handleGenerateImage = async () => {
-    if (!prompt.trim() || !editor) return;
+    if (!prompt.trim() || !editor || !editor.doc) return;
 
     try {
       const response = await generateImageMutation.mutateAsync({ prompt });
-      const imageUrl = response.data.imageUrl;
+      const imageUrl = response?.data?.imageUrl;
 
-      // Insert image into the editor
-      const doc = editor.doc;
-      if (doc) {
-        const pageBlocks = doc.getBlockByFlavour('affine:page');
-        if (pageBlocks.length > 0) {
-          const pageBlock = pageBlocks[0];
-
-          let noteBlocks = doc.getBlockByFlavour('affine:note');
-          let noteBlock;
-
-          if (noteBlocks.length === 0) {
-            const noteId = doc.addBlock('affine:note', {}, pageBlock.id);
-            noteBlock = doc.getBlockById(noteId)!;
-          } else {
-            noteBlock = noteBlocks[0];
-          }
-
-          doc.addBlock('affine:image', {
-            sourceId: imageUrl,
-            caption: prompt,
-            width: 400,
-            height: 300,
-          }, noteBlock.id);
-        }
+      if (!imageUrl) {
+        console.error('Image generation returned empty URL', response);
+        return;
       }
+
+      const doc = editor.doc;
+
+      // Создаем страницу, если ее нет
+      let pageBlocks = doc.getBlockByFlavour('affine:page');
+      let pageBlock = pageBlocks[0];
+      if (!pageBlock) {
+        const pageId = doc.addBlock('affine:page', {});
+        pageBlock = doc.getBlockById(pageId)!;
+      }
+
+      // Создаем заметку, если ее нет
+      let noteBlocks = doc.getBlockByFlavour('affine:note');
+      let noteBlock = noteBlocks[0];
+      if (!noteBlock) {
+        const noteId = doc.addBlock('affine:note', {}, pageBlock.id);
+        noteBlock = doc.getBlockById(noteId)!;
+      }
+
+      // Добавляем изображение
+      doc.addBlock('affine:image', {
+        sourceId: imageUrl,
+        caption: prompt,
+        width: 400,
+        height: 300,
+      }, noteBlock.id);
 
       setPrompt('');
       onClose();
     } catch (error) {
-      // Error handled by mutation hook
+      console.error('Failed to generate image:', error);
     }
   };
 
   const handleKeyPress = (e: React.KeyboardEvent) => {
-    if (e.key === 'Enter' && e.ctrlKey) {
-      handleGenerateImage();
-    } else if (e.key === 'Escape') {
-      onClose();
-    }
+    if (e.key === 'Enter' && e.ctrlKey) handleGenerateImage();
+    if (e.key === 'Escape') onClose();
   };
+
+  if (editorLoading || !editor) return null;
 
   return (
     <div className="image-widget-overlay" onClick={(e) => e.target === e.currentTarget && onClose()}>
@@ -68,43 +72,29 @@ const ImageWidget: React.FC<ImageWidgetProps> = ({ onClose }) => {
             onClick={onClose}
             className="close-button"
             disabled={generateImageMutation.isLoading}
-          >
-            ×
-          </button>
+          >×</button>
         </div>
         <div className="image-widget-content">
           <textarea
             value={prompt}
             onChange={(e) => setPrompt(e.target.value)}
             onKeyDown={handleKeyPress}
-            placeholder="Describe the image you want to generate...&#10;&#10;Tip: Press Ctrl+Enter to generate or Escape to close"
+            placeholder="Describe the image you want to generate... Ctrl+Enter to generate, Esc to close"
             rows={4}
             disabled={generateImageMutation.isLoading}
-            className="prompt-input"
             autoFocus
           />
           <div className="image-widget-actions">
             <button
               onClick={handleGenerateImage}
               disabled={!prompt.trim() || generateImageMutation.isLoading}
-              className={`generate-button ${generateImageMutation.isLoading ? 'loading' : ''}`}
             >
-              {generateImageMutation.isLoading ? (
-                <>
-                  <span className="loading-spinner"></span>
-                  Generating...
-                </>
-              ) : (
-                'Generate Image'
-              )}
+              {generateImageMutation.isLoading ? 'Generating...' : 'Generate Image'}
             </button>
             <button
               onClick={onClose}
-              className="cancel-button"
               disabled={generateImageMutation.isLoading}
-            >
-              Cancel
-            </button>
+            >Cancel</button>
           </div>
         </div>
       </div>
@@ -112,4 +102,4 @@ const ImageWidget: React.FC<ImageWidgetProps> = ({ onClose }) => {
   );
 };
 
-export default ImageWidget
+export default ImageWidget;

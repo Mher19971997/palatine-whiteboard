@@ -1,38 +1,51 @@
-import { useState } from 'react';
-import ImageWidget from '@palatine_whiteboard_frontend/components/ImageWidget';
-import { useAuth } from '@palatine_whiteboard_frontend/contexts/AuthContext';
+import React from 'react';
+import { useTheme } from '@palatine_whiteboard_frontend/hooks/useTheme';
+import { useEditor } from '@palatine_whiteboard_frontend/editor/context';
 
-const TopBar = () => {
-  const [showImageWidget, setShowImageWidget] = useState(false);
-  const { logout } = useAuth();
+interface TopBarProps {
+  onMenuToggle?: () => void;
+}
+
+const TopBar: React.FC<TopBarProps> = ({ onMenuToggle }) => {
+  const { isDarkMode, toggleTheme } = useTheme();
+  const { isConnected, } = useEditor()!;
 
   return (
-    <>
-      <div className="top-bar">
-        <div className="top-bar-title">Palatine Editor</div>
-        <div className="top-bar-actions">
-          <button
-            className="toolbar-btn"
-            onClick={() => setShowImageWidget(true)}
-            title="Generate Image"
-          >
-            🖼️ Generate Image
+    <header className="top-bar">
+      <div className="top-bar-left">
+        {onMenuToggle && (
+          <button className="menu-btn btn btn-secondary" onClick={onMenuToggle}>
+            ☰
           </button>
-          <button
-            className="toolbar-btn logout-btn"
-            onClick={logout}
-            title="Logout"
-          >
-            Logout
-          </button>
+        )}
+        <div className="logo">
+          <div className="logo-icon">P</div>
+          <span>Palatine Whiteboard</span>
         </div>
+        <nav className="breadcrumb">
+          <span>Document</span>
+          <span className="breadcrumb-separator">•</span>
+          <span>My Project</span>
+        </nav>
       </div>
 
-      {showImageWidget && (
-        <ImageWidget onClose={() => setShowImageWidget(false)} />
-      )}
-    </>
+      <div className="top-bar-right">
+        <div className={`status-indicator   ${isConnected ? 'status-online' : 'status-offline'}`}>
+          <div className="status-dot"></div>
+          <span>{isConnected ? 'Online' : 'Offline'}</span>
+        </div>
+
+        <button className="btn btn-secondary" onClick={toggleTheme}>
+          <span>{isDarkMode ? '☀️' : '🌙'}</span>
+          <span>{isDarkMode ? 'Light' : 'Dark'}</span>
+        </button>
+        <button className="btn btn-primary">
+          <span>📤</span>
+          <span>Share</span>
+        </button>
+      </div>
+    </header>
   );
 };
 
-export default TopBar
+export default TopBar;
