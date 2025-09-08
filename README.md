@@ -37,6 +37,8 @@ REDIS_PASSWORD=rB4dRlyn38F75Sg13Xd5iNM1wf
 POSTGRES_DB=palatine_whiteboard
 POSTGRES_USER=whiteboard
 POSTGRES_PASSWORD=Sg13Xd5iNM1wfSYZY708gh
+VAULT_DEV_ROOT_TOKEN_ID=root-token
+VAULT_DEV_LISTEN_ADDRESS=0.0.0.0:8200
 ```
 
 1️⃣ Backend .env (создай в ./backend/.env)
