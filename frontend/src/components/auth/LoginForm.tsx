@@ -10,13 +10,13 @@ interface LoginFormProps {
 
 export const LoginForm: React.FC<LoginFormProps> = ({ onSwitchToRegister }) => {
     const { register, handleSubmit, formState: { errors } } = useForm<LoginData>();
-    const loginMutation = useLogin();
+    const loginMutation = useLogin() as any;
     const { login } = useAuth();
 
     const onSubmit = async (data: LoginData) => {
         try {
             const response = await loginMutation.mutateAsync(data);
-            login(response.data.access_token);
+            login(response.data.access_token, '', '');
         } catch (error) {
             // Error handled by mutation
         }

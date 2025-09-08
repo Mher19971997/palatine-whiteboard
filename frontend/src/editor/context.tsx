@@ -31,7 +31,7 @@ export function EditorProvider({ children }: EditorProviderProps) {
   const createDocumentMutation = useCreateDocument();
 
   const { editor, collection } = useMemo(() => initEditor(), []);
-  const [error, setError] = useState<string | null>(null);
+  const [error] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(true);
 
   const hasCreatedRef = useRef(false);

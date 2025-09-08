@@ -40,7 +40,7 @@ export class DocumentGateway implements OnGatewayConnection, OnGatewayDisconnect
     const token = client.handshake.query.token as string;
     
     try {
-      const user = await this.authService.validateUser(token);
+      const user = await this.authService.validateUser(token) as any;
       
       const clientData: ClientData = {
         user,

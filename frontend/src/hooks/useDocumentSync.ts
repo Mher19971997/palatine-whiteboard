@@ -16,7 +16,7 @@ export function useDocumentSync({ doc, onDocumentUpdate }: any) {
 
     try {
       if (documentData?.data?.documentData) {
-        const binaryData = base64ToUint8Array(documentData?.data?.documentData);
+        const binaryData = base64ToUint8Array(documentData?.data?.documentData as any);
         doc.transact(() => {
           Y.applyUpdate(doc, binaryData);
         });
@@ -54,10 +54,10 @@ export function useDocumentSync({ doc, onDocumentUpdate }: any) {
       }
     });
 
-    const updateHandler = (update: Uint8Array, origin: any) => {
-      if (origin === "remote") return;
-      sendUpdate(update);
-    };
+    // const updateHandler = (update: Uint8Array, origin: any) => {
+    //   if (origin === "remote") return;
+    //   sendUpdate(update);
+    // };
     // doc.on("update", updateHandler);
 
     return () => {

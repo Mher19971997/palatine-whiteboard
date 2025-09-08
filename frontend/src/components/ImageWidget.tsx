@@ -9,7 +9,7 @@ interface ImageWidgetProps {
 const ImageWidget: React.FC<ImageWidgetProps> = ({ onClose }) => {
   const [prompt, setPrompt] = useState('');
   const { editor, isLoading: editorLoading } = useEditor() || {};
-  const generateImageMutation = useGenerateImage();
+  const generateImageMutation = useGenerateImage() as any;
 
   const handleGenerateImage = async () => {
     if (!prompt.trim() || !editor || !editor.doc) return;

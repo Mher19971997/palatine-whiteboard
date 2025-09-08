@@ -6,7 +6,7 @@ export const useUpdateDocument = () => {
     const queryClient = useQueryClient();
 
     return useMutation({
-        mutationFn: ({ data }: { data: { updateData: string; version: number } }) =>
+        mutationFn: ({ data }: { data: any }) =>
             documentAPI.update(data?.updateData?.data),
         onSuccess: (response, variables) => {
             queryClient.setQueryData(['document', variables], response.data);

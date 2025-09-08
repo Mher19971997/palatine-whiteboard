@@ -1,6 +1,6 @@
 {
   "name": "palatine_whiteboard_backend",
-  "version": "1.0",
+  "version": "1.0.0",
   "description": "",
   "author": "",
   "private": true,
@@ -9,6 +9,7 @@
   "scripts": {
     "build": "nest build",
     "format": "prettier --write \"src/**/*.ts\" \"test/**/*.ts\"",
+    "vault:generate-config": "cross-env CLI_PATH=vault/src/cli.ts nestjs-command generate:config",
     "start": "nest start",
     "start:dev": "nest start --watch",
     "start:debug": "nest start --debug --watch",

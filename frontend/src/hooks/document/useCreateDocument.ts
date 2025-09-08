@@ -7,7 +7,7 @@ export const useCreateDocument = () => {
     const queryClient = useQueryClient();
 
     return useMutation({
-        mutationFn: (data: DocumentData) => documentAPI.create(data),
+        mutationFn: (data: DocumentData) => documentAPI.create(data as any),
         onSuccess: (response) => {
             queryClient.setQueryData(['document'], response.data);
             toast.success('Document created successfully!');

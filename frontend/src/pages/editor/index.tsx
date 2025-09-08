@@ -48,7 +48,6 @@ import React, { useState } from 'react';
         <TopBar onMenuToggle={handleMenuToggle} />
         <div className="app-content">
           <DocumentPanel 
-            className={isPanelOpen ? 'open' : ''}
             onAction={handleDocumentAction}
           />
           <EditorContainer />

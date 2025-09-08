@@ -29,17 +29,29 @@ README.md
 
 ## 🔹 Настройка окружения
 
+
 Создай `.env` файл в корне проекта:
 
 ```env
-app.env=dev
-VAULT_DEV_ENDPOINT=http://vault:8200
-VAULT_DEV_ROOT_TOKEN_ID=root-token
-VAULT_DEV_LISTEN_ADDRESS=0.0.0.0:8200
 REDIS_PASSWORD=rB4dRlyn38F75Sg13Xd5iNM1wf
 POSTGRES_DB=palatine_whiteboard
 POSTGRES_USER=whiteboard
 POSTGRES_PASSWORD=Sg13Xd5iNM1wfSYZY708gh
+```
+
+1️⃣ Backend .env (создай в ./backend/.env)
+
+```env
+APP_ENV=dev
+VAULT_DEV_ENDPOINT=http://host.docker.internal:8200
+VAULT_DEV_ROOT_TOKEN_ID=root-token
+VAULT_DEV_LISTEN_ADDRESS=0.0.0.0:8200
+```
+
+2️⃣ Frontend .env (создай в ./frontend/.env)
+
+```env
+
 VITE_API_URL=http://backend:6001/api/v1/
 VITE_SOCKET_API_URL=http://backend:6001
 ```
@@ -48,13 +60,19 @@ VITE_SOCKET_API_URL=http://backend:6001
 
 ## 🔹 Запуск Vault
 
-1. Запусти Vault в dev-режиме с UI:
+1. Запусти docker network:
+
+```bash
+docker network create shared-network
+```
+
+2. Запусти Vault в dev-режиме с UI:
 
 ```bash
 docker-compose -f docker-compose.vault.yml up -d
 ```
 
-2. Открой UI Vault: [http://localhost:8200/ui](http://localhost:8200/ui)
+3. Открой UI Vault: [http://localhost:8200/ui](http://localhost:8200/ui)
 
 ---
 
@@ -136,60 +154,6 @@ docker-compose -f docker-compose.vault.yml up -d
 ## 🔹 Запуск базы данных и кэша
 
 ```bash
-docker-compose -f docker-compose.yml up -d
+docker-compose up -d                            
+
 ```
-
-Для инициализации PostgreSQL:
-
-```bash
-docker exec -i <postgres_container_name> psql -U whiteboard -d palatine_whiteboard -f init.sql
-```
-
----
-
-## 🔹 Запуск Backend
-
-```bash
-cd backend
-npm install
-npm run dev
-# или
-yarn install
-yarn dev
-```
-
-Backend: `http://localhost:6001/api/v1/`
-
----
-
-## 🔹 Запуск Frontend
-
-```bash
-cd frontend
-npm install
-npm run dev
-# или
-yarn install
-yarn dev
-```
-
-Frontend: `http://localhost:5173`
-
----
-
-## 🔹 Полезные команды
-
-```bash
-# Проверка контейнеров
-docker ps
-
-# Перезапуск всех сервисов
-docker-compose -f docker-compose.yml up -d --build
-
-# Остановка сервисов
-docker-compose -f docker-compose.yml down
-
-# Проверка логов Vault
-docker logs vault -f
-```
-

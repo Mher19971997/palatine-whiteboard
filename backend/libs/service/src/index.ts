@@ -34,23 +34,47 @@ export const server = async (app: NestExpressApplication, mod: any, confPref: st
 };
 
 export const loadConfig = async () => {
-  dotenv.config({ path: path.resolve(process.cwd(), '../.env') });
+  // Подгружаем .env только если он существует
+  const envPath = path.resolve(process.cwd(), './.env');
+  if (fs.existsSync('.env')) {
+    dotenv.config({ path: envPath });
+  }
 
-  const [env, endpoint, token] = [
-    process.env['app.env'],
-    process.env['VAULT_DEV_ENDPOINT'],
-    process.env['VAULT_DEV_ROOT_TOKEN_ID'],
-  ];
+  // Если app.env не задан — дефолт 'prod'
+  const env = process.env['APP_ENV'];
+  const endpoint = process.env['VAULT_DEV_ENDPOINT'];
+  const token = process.env['VAULT_DEV_ROOT_TOKEN_ID'];
 
-  // const vClientCreds = await client({ endpoint }).userpassLogin({ username, password });
-  // const vClient = client({ endpoint, token: vClientCreds?.auth?.client_token });
   const vClient = client({ endpoint, token });
-  /*await vClient.mount({ type: 'kv', mount_point: `kv/${env}/backend` });*/
 
-  const vConfig = await vClient.read(`kv/data/${env}/backend`);
-  fs.writeFileSync(path.resolve(process.cwd(), 'config', `config-${env}.json5`), vConfig?.data?.data.config);
+  let vConfig;
+  try {
+    vConfig = await vClient.read(`kv/data/${env}/backend`);
+  } catch (err) {
+    console.warn('Ошибка при чтении из Vault, используем пустой объект', err);
+    vConfig = { data: { data: { config: '{}' } } };
+  }
+
+  const configStr = vConfig?.data?.data?.config;
+
+  // === создаём config-dev.json5 или config-prod.json5 ===
+  const cwd = process.cwd();
+  const configDir = path.resolve(cwd, 'config');
+  if (!fs.existsSync(configDir)) fs.mkdirSync(configDir, { recursive: true });
+
+  const configFile = path.resolve(configDir, `config-${env}.json5`);
+  fs.writeFileSync(configFile, configStr, 'utf-8');
+  console.log(`Файл создан: ${configFile}`);
+
+  // === conf.json5 ===
+  const options = { folder: 'config' };
+  const confDir = path.resolve(cwd, options.folder);
+  if (!fs.existsSync(confDir)) fs.mkdirSync(confDir, { recursive: true });
+
+  const confFile = path.resolve(confDir, 'conf.json5');
+  if (!fs.existsSync(confFile)) fs.writeFileSync(confFile, configStr, 'utf-8');
+  console.log(`Файл создан: ${confFile}`);
 };
-
 
 export const startApp = async (mod: any, confPref: string) => {
   await loadConfig();

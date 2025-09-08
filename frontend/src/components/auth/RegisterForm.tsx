@@ -8,10 +8,8 @@ interface RegisterFormProps {
 }
 
 export const RegisterForm: React.FC<RegisterFormProps> = ({ onSwitchToLogin }) => {
-  const { register, handleSubmit, formState: { errors }, watch } = useForm<RegisterData>();
-  const registerMutation = useRegister();
-
-  const password = watch('password');
+  const { register, handleSubmit, formState: { errors } } = useForm<RegisterData>();
+  const registerMutation = useRegister() as any;
 
   const onSubmit = async (data: RegisterData) => {
     try {

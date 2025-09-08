@@ -1,5 +1,5 @@
 import { AffineEditorContainer } from '@blocksuite/presets';
-import { Doc, Schema } from '@blocksuite/store';
+import { Schema } from '@blocksuite/store';
 import { DocCollection } from '@blocksuite/store';
 import { AffineSchemas } from '@blocksuite/blocks';
 
@@ -25,7 +25,7 @@ export function initEditor() {
   const editor = new AffineEditorContainer();
   editor.doc = doc;
   editor.slots.docLinkClicked.on(({ docId }) => {
-    const target = <Doc>collection.getDoc(docId);
+    const target = collection.getDoc(docId) as any;
     editor.doc = target;
   });
   return { editor, collection };

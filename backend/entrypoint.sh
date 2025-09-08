@@ -8,5 +8,4 @@ export NODE_ENV=production
 npm run migration:up
 
 # Run pm2 with the provided configuration file
-npm run start:build
 npm run start:prod

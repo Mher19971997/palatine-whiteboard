@@ -19,7 +19,7 @@ export class ConfigService {
 
     const confFile = path.resolve(cwd, options.folder, 'conf.json5');
 
-    const env = `${process.env['app.env'] || 'local'}`;
+    const env = `${process.env['APP_ENV'] || 'local'}`;
     const vConfFile = path.resolve(cwd, options.folder, `config-${env}.json5`);
     const configMap = json5.parse(fs.readFileSync(confFile).toString('utf8'));
     let vConfigMap: any = {};

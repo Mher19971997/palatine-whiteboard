@@ -10,7 +10,7 @@ export class ConsulService {
 
   async registerService() {
     const config = this.configService.get<any>('service.consul');
-    const env = this.configService.get<string>('app.env');
+    const env = this.configService.get<string>('APP_ENV');
     const name = this.configService.get<string>('app.name');
     const service = this.configService.get<any>(`${name}`);
     if (env === 'local' || config.enabled === false) {

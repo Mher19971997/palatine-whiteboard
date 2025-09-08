@@ -1,28 +1,25 @@
-# Use Node.js v14 as the base image
-FROM node:latest
+# Use Node.js v20 as base
+FROM node:20
 
-# Set the working directory inside the container
+RUN apt-get update && apt-get install -y bash
+
 WORKDIR /app
 
-# Copy package.json and package-lock.json to the working directory
+# Копируем package.json и package-lock.json только
 COPY package*.json ./
 
-# Copy the rest of the application code
+# Устанавливаем зависимости
+RUN npm install
+
+# Копируем всё остальное (код + .env)
 COPY . .
 
-# Install dependencies
-RUN npm ci
-
-# Build the NestJS application
+# Строим NestJS
 RUN npm run build
+RUN npm run vault:generate-config
 
-# Expose port 6001
+# Открываем порт
 EXPOSE 6001
 
-# Command to run the application
-COPY entrypoint.sh ./
-RUN chmod +x ./entrypoint.sh
-RUN [ -f ./entrypoint.sh ] && chmod +x ./entrypoint.sh || true
-
-# Define the entrypoint, ensure entrypoint.sh exists
-ENTRYPOINT ["./entrypoint.sh"]
+# Запускаем миграции и приложение
+CMD npm run migration:up && npm run start:prod
