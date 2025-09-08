@@ -1,23 +1,18 @@
-# Используем официальный Node.js
-FROM node:20
-
-# Рабочая директория
+# --- build stage ---
+FROM node:20 AS build
 WORKDIR /app
 
-# Копируем package.json и package-lock.json
 COPY package*.json ./
-
-# Устанавливаем зависимости
 RUN npm install
 
-# Копируем все исходники
 COPY . .
+RUN npm run build
 
-# Копируем .env
-COPY .env .env
+# --- run stage ---
+FROM nginx:alpine
+WORKDIR /usr/share/nginx/html
+COPY --from=build /app/dist ./
+COPY nginx.conf /etc/nginx/conf.d/default.conf
 
-# Открываем порт 3000
 EXPOSE 3000
-
-# Запуск Vite dev server на 0.0.0.0:3000
-CMD ["npm", "run", "dev", "--", "--host", "0.0.0.0", "--port", "3000"]
+CMD ["nginx", "-g", "daemon off;"]
