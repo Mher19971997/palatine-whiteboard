@@ -48,34 +48,21 @@ VITE_SOCKET_API_URL=http://backend:6001
 
 ## 🔹 Запуск Vault
 
-1. Перейди в директорию `backend/`:
-
-```bash
-cd backend
-```
-
-2. Запусти Vault в dev-режиме с UI:
+1. Запусти Vault в dev-режиме с UI:
 
 ```bash
 docker-compose -f docker-compose.vault.yml up -d
 ```
 
-3. Проверь статус Vault:
-
-```bash
-curl http://localhost:8200/v1/sys/health
-```
-
-4. Открой UI Vault: [http://localhost:8200/ui](http://localhost:8200/ui)
+2. Открой UI Vault: [http://localhost:8200/ui](http://localhost:8200/ui)
 
 ---
 
-## 🔹 Добавление конфигурации в Vault через UI
+## 🔹 Видео-демо: Добавление конфига в Vault
 
-1. Авторизуйся с root-токеном `root-token`.  
-2. Перейди в `Secrets → KV → kv → local/backend`.  
-3. Нажми **Create Secret** и вставь JSON-конфиг:
+[![Смотреть видео](assets/demo/vault-preview.png)](assets/demo/vault.mp4)
 
+  
 ```json
 {
   "app": {
